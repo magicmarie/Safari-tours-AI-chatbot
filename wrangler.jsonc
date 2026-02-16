@@ -1,62 +1,102 @@
 /**
- * For more details on how to configure Wrangler, refer to:
- * https://developers.cloudflare.com/workers/wrangler/configuration/
+ * Wrangler is Cloudflare's CLI tool for developing and deploying Workers.
+ * For more details: https://developers.cloudflare.com/workers/wrangler/configuration/
  */
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "cf-ai-safari-tours",
-	"main": "src/server.ts",
-	"compatibility_date": "2025-12-17",
+	"$schema": "node_modules/wrangler/config-schema.json", // JSON schema for autocomplete and validation in your IDE
+
+	// ========================================
+	// BASIC CONFIGURATION
+	// ========================================
+
+	"name": "cf-ai-safari-tours", // Your worker name - will be used in the deployed URL: cf-ai-safari-tours.workers.dev
+	"main": "src/server.ts", // Entry point of your application - the main server file that handles all incoming requests
+	"compatibility_date": "2025-12-17", // Locks the Workers runtime behavior to this date - prevents breaking changes
 	"compatibility_flags": [
-		"nodejs_compat"
+		"nodejs_compat" // Enable Node.js compatibility layer - allows using Node.js APIs like 'path', 'crypto', etc.
 	],
-	"ai": {
-		"binding": "AI",
-		"remote": true
+
+	// ========================================
+	// AI BINDING - Cloudflare AI Integration
+	// ========================================
+
+	"ai": { // Binds Cloudflare AI to your worker - access it via env.AI in your code
+		"binding": "AI", // The name you'll use to access AI in your code (e.g., env.AI)
+		"remote": true // Uses Cloudflare's remote AI models (Llama, Mistral, etc.) - not local
 	},
-	"assets": {
-		"directory": "public"
+
+	// ========================================
+	// STATIC ASSETS
+	// ========================================
+
+	"assets": { // Serves static files (HTML, CSS, images, etc.) from the public/ directory
+		"directory": "public" // Cloudflare will automatically serve these files from the edge
 	},
-	"durable_objects": {
+
+	// ========================================
+	// DURABLE OBJECTS - Stateful Storage
+	// ========================================
+
+	"durable_objects": { // Durable Objects provide strongly consistent, stateful storage - perfect for real-time features
 		"bindings": [
 			{
-				"name": "Chat",
-				"class_name": "Chat"
+				"name": "Chat", // The name you'll use to access this Durable Object (e.g., env.Chat)
+				"class_name": "Chat" // The class name in your code that implements this Durable Object
 			}
 		]
 	},
-	"migrations": [
+
+	// ========================================
+	// MIGRATIONS - Database Schema Versioning
+	// ========================================
+
+	"migrations": [ // Defines schema migrations for Durable Objects - tells Cloudflare how to handle data when deploying
 		{
-			"tag": "v1",
-			"new_sqlite_classes": [
-				"Chat"
+			"tag": "v1", // Version tag for this migration
+			"new_sqlite_classes": [ // New Durable Objects that use SQLite storage
+				"Chat" // The Chat Durable Object uses SQLite for persistent storage
 			]
 		}
 	],
-	"observability": {
+
+	// ========================================
+	// OBSERVABILITY - Monitoring & Analytics
+	// ========================================
+
+	"observability": { // Enables Cloudflare's observability features - gives you metrics, logs, and analytics
 		"enabled": true
 	}
-	/**
-	 * Smart Placement
-	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
-	 */
-	// "placement": {  "mode": "smart" }
-	/**
-	 * Bindings
-	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
-	 * databases, object storage, AI inference, real-time communication and more.
-	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
-	 */
-	/**
-	 * Environment Variables
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
-	 * Note: Use secrets to store sensitive data.
-	 * https://developers.cloudflare.com/workers/configuration/secrets/
-	 */
-	// "vars": {  "MY_VARIABLE": "production_value" }
-	/**
-	 * Service Bindings (communicate between multiple Workers)
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
-	 */
-	// "services": [  {   "binding": "MY_SERVICE",   "service": "my-service"  } ]
+	// ========================================
+	// OPTIONAL CONFIGURATIONS (currently disabled)
+	// ========================================
+
+	// SMART PLACEMENT - Auto-optimizes where your Worker runs geographically (closest to resources it needs)
+	// "placement": { "mode": "smart" }
+
+	// KV STORAGE - Key-value storage for caching and simple data
+	// "kv_namespaces": [
+	//   { "binding": "MY_KV", "id": "your-kv-id" }
+	// ]
+
+	// D1 DATABASE - Serverless SQL database
+	// "d1_databases": [
+	//   { "binding": "DB", "database_id": "your-d1-id" }
+	// ]
+
+	// R2 STORAGE - Object storage like S3
+	// "r2_buckets": [
+	//   { "binding": "MY_BUCKET", "bucket_name": "your-bucket-name" }
+	// ]
+
+	// ENVIRONMENT VARIABLES - Non-sensitive config values (API endpoints, feature flags, etc.)
+	// For sensitive data (API keys, passwords), use: wrangler secret put SECRET_NAME
+	// "vars": {
+	//   "MY_VARIABLE": "production_value",
+	//   "API_ENDPOINT": "https://api.example.com"
+	// }
+
+	// SERVICE BINDINGS - Connect multiple Workers together (microservices architecture)
+	// "services": [
+	//   { "binding": "MY_SERVICE", "service": "my-other-worker-name" }
+	// ]
 }
